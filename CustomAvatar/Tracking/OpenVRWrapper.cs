@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -7,17 +9,37 @@ namespace CustomAvatar.Tracking
 {
     internal static class OpenVRWrapper
     {
-        internal static string[] GetTrackedDeviceSerialNumbers()
-        {
-            string[] serialNumbers = new string[OpenVR.k_unMaxTrackedDeviceCount];
+	    internal static string[] GetTrackedDeviceSerialNumbers()
+	    {
+		    string[] serialNumbers = new string[OpenVR.k_unMaxTrackedDeviceCount];
 
-            for (uint i = 0; i < OpenVR.k_unMaxTrackedDeviceCount; i++)
-            {
-                serialNumbers[i] = GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_SerialNumber_String);
-            }
+		    for (uint i = 0; i < OpenVR.k_unMaxTrackedDeviceCount; i++)
+		    {
+			    serialNumbers[i] = GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_SerialNumber_String);
+		    }
 
-            return serialNumbers;
-        }
+		    return serialNumbers;
+	    }
+		
+	    internal static string[] GetTrackedDeviceNames()
+	    {
+		    string[] names = new string[OpenVR.k_unMaxTrackedDeviceCount];
+
+		    for (uint i = 0; i < OpenVR.k_unMaxTrackedDeviceCount; i++)
+		    {
+			    string name = GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_ModelNumber_String);
+			    string serial = GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_SerialNumber_String);
+
+			    if (!string.IsNullOrEmpty(serial))
+			    {
+				    name += " S/N " + serial;
+			    }
+
+			    names[i] = name;
+		    }
+
+		    return names;
+	    }
 
         internal static TrackedDeviceType GetTrackedDeviceType(uint deviceIndex)
         {
@@ -35,18 +57,18 @@ namespace CustomAvatar.Tracking
 
         internal static string GetStringTrackedDeviceProperty(uint deviceIndex, ETrackedDeviceProperty property)
         {
-            ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
-            uint length = OpenVR.System.GetStringTrackedDeviceProperty(deviceIndex, property, null, 0, ref error);
+	        ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
+	        uint length = OpenVR.System.GetStringTrackedDeviceProperty(deviceIndex, property, null, 0, ref error);
 
-            if (length > 0)
-            {
-                StringBuilder stringBuilder = new StringBuilder((int)length);
-                OpenVR.System.GetStringTrackedDeviceProperty(deviceIndex, property, stringBuilder, length, ref error);
+	        if (length > 0)
+	        {
+		        StringBuilder stringBuilder = new StringBuilder((int)length);
+		        OpenVR.System.GetStringTrackedDeviceProperty(deviceIndex, property, stringBuilder, length, ref error);
 
-                return stringBuilder.ToString();
-            }
+		        return stringBuilder.ToString();
+	        }
 
-            return null;
+	        return null;
         }
     }
 }

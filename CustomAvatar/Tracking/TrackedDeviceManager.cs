@@ -26,7 +26,7 @@ namespace CustomAvatar.Tracking
         {
             var nodeStates = new List<XRNodeState>();
             var unassignedDevices = new Queue<XRNodeState>();
-            string[] serialNumbers = OpenVRWrapper.GetTrackedDeviceSerialNumbers();
+            string[] serialNumbers = OpenVRWrapper.GetTrackedDeviceNames();
             InputTracking.GetNodeStates(nodeStates);
 
             XRNodeState? head      = null;
@@ -63,12 +63,14 @@ namespace CustomAvatar.Tracking
                     case XRNode.HardwareTracker:
                         // try to figure out tracker role using OpenVR
                         string deviceName = InputTracking.GetNodeName(nodeStates[i].uniqueID);
-                        uint openVRDeviceId = (uint)serialNumbers.ToList().FindIndex(s => !string.IsNullOrEmpty(s) && deviceName.Contains(s));
+                        uint openVRDeviceId = (uint)serialNumbers.ToList().FindIndex(s => s == deviceName);
                         TrackedDeviceType role = OpenVRWrapper.GetTrackedDeviceType(openVRDeviceId);
 
                         switch (role)
                         {
                             case TrackedDeviceType.ViveTracker:
+							case TrackedDeviceType.KinectToVRTracker:
+								Console.WriteLine(deviceName);
                                 unassignedDevices.Enqueue(nodeStates[i]);
                                 break;
 
@@ -92,17 +94,17 @@ namespace CustomAvatar.Tracking
             }
 
             // fallback if OpenVR tracker roles aren't set/supported
-            if (LeftFoot.Equals(default) && trackerCount >= 2 && unassignedDevices.Count > 0)
+            if (leftFoot == null && trackerCount >= 2 && unassignedDevices.Count > 0)
             {
                 leftFoot = unassignedDevices.Dequeue();
             }
 
-            if (RightFoot.Equals(default) && trackerCount >= 2 && unassignedDevices.Count > 0)
+            if (rightFoot == null && trackerCount >= 2 && unassignedDevices.Count > 0)
             {
                 rightFoot = unassignedDevices.Dequeue();
             }
 
-            if (Waist.Equals(default) && unassignedDevices.Count > 0)
+            if (waist == null && unassignedDevices.Count > 0)
             {
                 waist = unassignedDevices.Dequeue();
             }
