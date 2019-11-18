@@ -68,8 +68,7 @@ namespace CustomAvatar.Tracking
 
                         switch (role)
                         {
-                            case TrackedDeviceType.ViveTracker:
-							case TrackedDeviceType.KinectToVRTracker:
+                            case TrackedDeviceType.Tracker:
 								Console.WriteLine(deviceName);
                                 unassignedDevices.Enqueue(nodeStates[i]);
                                 break;
